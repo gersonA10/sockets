@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima en tiempo real</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            margin:  0;
+            padding: 0;
+            text-align: center;
+        }
+        
+        .container {
+            margin: 50px auto;
+        }
+
+        input {
+            padding: 10px;
+            width: 70%;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 20px;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <h1>Consulta el clima</h1>
+        <input type="text" id="ciudad" placeholder="Ingresa una ciudad" />
+        <button id="consultar">Consultar</button>
+        <div class="result" id="resultado"></div>
+
+        <script>
+            const socket = io();
+
+            const ciudadInput = document.getElementById('ciudad');
+            const consultarBtn = document.getElementById('consultar');
+            const resultadoDiv = document.getElementById('resultado');
+
+
+            consultarBtn.addEventListener('click', ()=> {
+                const ciudad = ciudadInput.value.trim();
+                if (ciudad) {
+                    socket.emit('consultarClima', ciudad);
+                } else {
+                    alert('Tiene que ingresar una ciudad');
+                }
+            });
+
+            socket.on('climaActualizado', (clima) => {
+                resultadoDiv.innerHTML = `
+                <h3>Clima en ${clima.ciudad}</h3>
+                <p>Descripcion: ${clima.descripcion}</p>
+                <p>Temperatura: ${clima.temp}</p>
+                <p>Temp Min: ${clima.tempMin} C, Temp Max: ${clima.tempMax} C</p>
+                `;
+            });
+
+            socket.on('errorClima', (mensaje) => {
+                resultadoDiv.innerHTML = ``
+            })
+        </script>
+    </div>
+</body>
+</html>
